@@ -1,12 +1,20 @@
 import asyncio
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from app.agents.health_agent import run_agent
+from app.agents.health_agent import run_agent, get_anomalies, get_city_summary
 
 app = FastAPI(
     title="CityPulse Health API",
     description="AI-powered city health decision intelligence platform",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"]
 )
 
 class ChatRequest(BaseModel):
@@ -25,13 +33,26 @@ def health_check():
 
 @app.get("/briefing")
 async def get_morning_briefing():
-    """Generate the AI morning briefing from live BigQuery data"""
+    """Return structured briefing with anomalies and AI summary separately"""
     try:
-        response = await run_agent(
+        # Get structured anomalies directly from BigQuery
+        anomalies_data = get_anomalies()
+
+        # Get city summary directly from BigQuery
+        summary_data = get_city_summary()
+
+        # Get AI generated briefing text from agent
+        briefing_text = await run_agent(
             "Generate the morning briefing for today. "
             "Check all anomalies and give me a full summary with recommendations."
         )
-        return {"briefing": response}
+
+        return {
+            "briefing": briefing_text,
+            "anomalies": anomalies_data["anomalies"],
+            "anomaly_count": anomalies_data["anomaly_count"],
+            "summary": summary_data
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -45,7 +66,7 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/anomalies")
-async def get_anomalies():
+async def get_anomalies_endpoint():
     """Get all current health anomalies across the city"""
     try:
         response = await run_agent(
