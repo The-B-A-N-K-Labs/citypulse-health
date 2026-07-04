@@ -1,7 +1,7 @@
 import random
 from datetime import datetime, timedelta
 from google.cloud import bigquery
-from who_api import fetch_vaccination_coverage_india
+from who_api import fetch_and_store_who_data
 
 PROJECT_ID = "citypulse-health-2026"
 DATASET_ID = "citypulse_health"
@@ -112,7 +112,9 @@ def run():
     print("CityPulse Health — Data Loader")
     print("=" * 50)
 
-    base_vaccination = fetch_vaccination_coverage_india()
+    who_data = fetch_and_store_who_data()
+    base_vaccination = who_data.get("WHS4_100", 85.0) / 100.0
+    print(f"Using WHO vaccination coverage: {base_vaccination*100}%")
     clinic_rows = generate_clinic_metrics()
     disease_rows = generate_disease_signals(base_vaccination)
     summary_rows = generate_city_summary(clinic_rows, disease_rows)
