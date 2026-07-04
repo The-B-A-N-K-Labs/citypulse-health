@@ -11,24 +11,11 @@ class MorningBriefingWorkflow:
         self.coordinator = CoordinatingAgent()
 
     def generate_briefing(self) -> dict:
+        # Dynamically fetches the freshest live data from BigQuery
         context = self.data_loader.load_sample_data()
         result = self.coordinator.run(context)
-
-        # Dynamically fetches the freshest live data from BigQuery
-        try:
-            live_summary = get_city_summary()
-            live_anomalies = get_anomalies()
-        except Exception:
-            # Fallback wrapper to make sure hackathon dashboard doesn't
-            # hard-crash if the database connection drops during presentation
-            live_summary = {
-                "date": "System Live",
-                "total_zones_monitored": 12,
-                "signals_processed_overnight": 47,
-                "highest_outbreak_probability": "78%",
-                "data_freshness": "Fallback Mode (DB Offline)"
-            }
-            live_anomalies = {"anomalies": []}
+        live_summary = get_city_summary()
+        live_anomalies = get_anomalies()
 
         return {
             "morning_briefing": result["summary"],
