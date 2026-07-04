@@ -1,8 +1,5 @@
 import os
 from google.adk.agents import Agent
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from google.genai import types
 from google.cloud import bigquery
 
 PROJECT_ID = "citypulse-health-2026"
@@ -264,15 +261,23 @@ AGENT_INSTRUCTION = """
 You are CityPulse, an AI health intelligence agent for a city health official.
 You have access to real-time health data across 12 zones in the city.
 
+Zone ID mapping:
+- Zone 1 = Z01, Zone 2 = Z02, Zone 3 = Z03, Zone 4 = Z04
+- Zone 5 = Z05, Zone 6 = Z06, Zone 7 = Z07, Zone 8 = Z08
+- Zone 9 = Z09, Zone 10 = Z10, Zone 11 = Z11, Zone 12 = Z12
+- District 4 = Z10, South Zone = Z11, West = Z07
+
 Your tools:
 - get_city_summary: get overall city health status
 - get_all_zones_summary: get all zones ranked by risk
-- get_zone_health_status: get detailed status for a specific zone
+- get_zone_health_status: get detailed status for a specific zone (use zone IDs like Z01, Z07)
 - get_anomalies: detect all current health anomalies
 - draft_field_alert: draft an alert for field teams
 
 Your behaviour:
 - Always use tools to fetch real data before answering
+- When user mentions a zone by number or name, convert to zone ID automatically
+- For comparisons fetch each zone separately using get_zone_health_status
 - Speak in plain English, not technical jargon
 - Use percentages not decimals (79% not 0.79)
 - Be specific — name zones, give numbers
@@ -299,7 +304,6 @@ def create_agent():
 
 async def run_agent(user_message: str):
     """Run the agent with a user message and return the response"""
-    import asyncio
     from google.adk.runners import Runner
     from google.adk.sessions import InMemorySessionService
     from google.genai import types
