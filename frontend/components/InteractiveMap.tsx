@@ -22,10 +22,10 @@ export default function InteractiveMap({ anomalies, activeFilter, onZoneClick, t
     const cols = 4;
     const boxSize = 100;
     const padding = 10;
-    
+
     const rows = Math.ceil(totalZones / cols);
     const generated = [];
-    
+
     for (let i = 0; i < totalZones; i++) {
       const row = Math.floor(i / cols);
       const col = i % cols;
@@ -35,18 +35,18 @@ export default function InteractiveMap({ anomalies, activeFilter, onZoneClick, t
         y: padding + row * (boxSize + padding),
       });
     }
-    
+
     return {
       zones: generated,
       svgWidth: cols * (boxSize + padding) + padding,
       svgHeight: rows * (boxSize + padding) + padding
     };
   }, [totalZones]);
-  
-  
+
+
   const getZoneColor = (zoneAnomalies: Anomaly[]) => {
     if (zoneAnomalies.length === 0) return "rgba(0, 0, 0, 0.04)"; // Normal/Safe
-    
+
     const hasDengue = zoneAnomalies.some(a => a.type === "DENGUE_RISK");
     const hasClinic = zoneAnomalies.some(a => a.type === "CLINIC_OVERLOAD");
     const hasMaternal = zoneAnomalies.some(a => a.type === "MATERNAL_CARE_DROP");
@@ -58,30 +58,30 @@ export default function InteractiveMap({ anomalies, activeFilter, onZoneClick, t
       return "var(--map-dim)"; // Doesn't match filter, dim it
     }
 
-    if (hasDengue) return "rgba(239, 68, 68, 0.8)"; 
-    if (hasClinic) return "rgba(245, 158, 11, 0.8)"; 
+    if (hasDengue) return "rgba(239, 68, 68, 0.8)";
+    if (hasClinic) return "rgba(245, 158, 11, 0.8)";
     if (hasMaternal) return "rgba(59, 130, 246, 0.8)";
-    
+
     return "var(--map-empty)";
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="card card-padding" 
+      className="card card-padding"
       style={{ position: "relative", width: "100%", height: "auto", overflow: "hidden" }}
     >
       <h4 style={{ marginBottom: "4px", color: "var(--text-secondary)", fontSize: "0.85rem", letterSpacing: "1px", fontWeight: 700 }}>LIVE CITY HEATMAP</h4>
       <p style={{ margin: "0 0 16px 0", fontSize: "0.8rem", color: "var(--text-secondary)" }}>Hover/Click on the zones to see more detailed info.</p>
-      
-      <svg width="100%" height="auto" viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+
+      <svg width="100%" viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: "auto" }}>
         {zones.map((zone) => {
-          const zoneAnomalies = anomalies?.filter(a => 
+          const zoneAnomalies = anomalies?.filter(a =>
             a.zone === zone.id || a.zone.startsWith(`${zone.id} -`) || a.zone.startsWith(`${zone.id} `)
           ) || [];
-          
+
           const color = getZoneColor(zoneAnomalies);
           const isHighRisk = color.includes("239, 68, 68") || color.includes("245, 158, 11");
 
@@ -110,9 +110,9 @@ export default function InteractiveMap({ anomalies, activeFilter, onZoneClick, t
           };
 
           return (
-            <g 
-              key={zone.id} 
-              onClick={() => onZoneClick(zone.id)} 
+            <g
+              key={zone.id}
+              onClick={() => onZoneClick(zone.id)}
               style={{ cursor: "pointer" }}
               onMouseMove={(e) => {
                 setTooltip({
@@ -135,10 +135,10 @@ export default function InteractiveMap({ anomalies, activeFilter, onZoneClick, t
                 stroke={color.startsWith("var") ? "var(--border)" : "rgba(255, 255, 255, 0.2)"}
                 strokeWidth="1"
                 initial={{ opacity: 0 }}
-                animate={{ 
-                  opacity: isHighRisk ? [0.6, 1, 0.6] : 1, 
+                animate={{
+                  opacity: isHighRisk ? [0.6, 1, 0.6] : 1,
                 }}
-                transition={{ 
+                transition={{
                   opacity: {
                     duration: 1.5,
                     repeat: isHighRisk ? Infinity : 0,
@@ -147,23 +147,23 @@ export default function InteractiveMap({ anomalies, activeFilter, onZoneClick, t
                 }}
                 whileHover={{ stroke: "rgba(255,255,255,0.4)" }}
               />
-              <text 
-                x={zone.x + 50} 
-                y={zone.y + 45} 
-                textAnchor="middle" 
-                fill={color === "var(--map-dim)" ? "var(--text-muted)" : (zoneAnomalies.length === 0 ? "var(--text-primary)" : "white")} 
-                fontSize="14" 
+              <text
+                x={zone.x + 50}
+                y={zone.y + 45}
+                textAnchor="middle"
+                fill={color === "var(--map-dim)" ? "var(--text-muted)" : (zoneAnomalies.length === 0 ? "var(--text-primary)" : "white")}
+                fontSize="14"
                 fontWeight="600"
                 style={{ pointerEvents: "none" }}
               >
                 {zone.id}
               </text>
-              <text 
-                x={zone.x + 50} 
-                y={zone.y + 65} 
-                textAnchor="middle" 
-                fill={color === "var(--map-dim)" ? "var(--text-muted)" : (zoneAnomalies.length === 0 ? "var(--text-secondary)" : "rgba(255,255,255,0.9)")} 
-                fontSize="11" 
+              <text
+                x={zone.x + 50}
+                y={zone.y + 65}
+                textAnchor="middle"
+                fill={color === "var(--map-dim)" ? "var(--text-muted)" : (zoneAnomalies.length === 0 ? "var(--text-secondary)" : "rgba(255,255,255,0.9)")}
+                fontSize="11"
                 fontWeight="500"
                 style={{ pointerEvents: "none" }}
               >

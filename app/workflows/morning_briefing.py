@@ -12,26 +12,10 @@ class MorningBriefingWorkflow:
 
     def generate_briefing(self) -> dict:
         # Dynamically fetches the freshest live data from BigQuery
-        try:
-            context = self.data_loader.load_sample_data()
-            result = self.coordinator.run(context)
-            live_summary = get_city_summary()
-            live_anomalies = get_anomalies()
-        except Exception as e:
-            import logging
-            logging.error("Failed to fetch live data: %s", e)
-            # Fallback wrapper to make sure dashboard doesn't
-            # hard-crash if the database connection drops
-            context = {"zone": "Fallback Zone", "risk_level": "medium", "clinic_load": 0.0}
-            result = self.coordinator.run(context)
-            live_summary = {
-                "date": "System Live",
-                "total_zones_monitored": 12,
-                "signals_processed_overnight": 47,
-                "highest_outbreak_probability": "78%",
-                "data_freshness": "Fallback Mode (DB Offline)"
-            }
-            live_anomalies = {"anomalies": []}
+        context = self.data_loader.load_sample_data()
+        result = self.coordinator.run(context)
+        live_summary = get_city_summary()
+        live_anomalies = get_anomalies()
 
         return {
             "morning_briefing": result["summary"],
