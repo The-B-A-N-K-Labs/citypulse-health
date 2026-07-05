@@ -6,6 +6,8 @@ locals {
     "cloudresourcemanager.googleapis.com",
     "iamcredentials.googleapis.com",
     "sts.googleapis.com",
+    "bigquery.googleapis.com",
+    "aiplatform.googleapis.com",
   ]
 }
 
