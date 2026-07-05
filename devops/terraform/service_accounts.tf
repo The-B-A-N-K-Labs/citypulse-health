@@ -65,7 +65,7 @@ resource "google_iam_workload_identity_pool" "github_pool" {
 resource "google_iam_workload_identity_pool_provider" "github_provider" {
   project                            = var.project_id
   workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
-  workload_identity_pool_provider_id = "${var.service_name}-gh-provider"
+  workload_identity_pool_provider_id = "${var.service_name}-gh"
   display_name                       = "GitHub provider"
 
   attribute_mapping = {
